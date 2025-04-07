@@ -1,0 +1,323 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TechShop
+{
+    public class Customer
+    {
+        public int CustomerId;
+        public string FirstName;
+        public string LastName;
+
+       public string Email;
+       public string Phone;
+
+        public string Address;
+       public  Order order;
+        List<Order> list=new List<Order>();
+
+
+
+        public Customer(int customerId, string firstName, string lastName, string email, string phone, string address)
+        {
+            CustomerId = customerId;
+            FirstName = firstName;
+            LastName = lastName;
+            Email = email;
+            Phone = phone;
+            Address = address;
+     
+        }
+        public void AddOrder(Order order)
+        {
+            list.Add(order);
+        }
+        public int CalculateTotalOrders()
+        {
+         
+            return list.Count;
+        }
+
+        public void GetCustomerDetails()
+        {
+            Console.WriteLine($"Customer ID: {CustomerId}, Name: {FirstName} {LastName}, Email: {Email}, Phone: {Phone}, Address: {Address}, Total Orders: {CalculateTotalOrders()}");
+        }
+
+        public void UpdateCustomerInfo(string email, string phone, string address)
+        {
+            Email = email;
+            Phone = phone;
+            Address = address;
+        }
+
+    }
+}
+namespace TechShop
+{
+    public class Product
+    {
+
+
+        public int productId;
+        public string productName;
+        public string description;
+
+        public decimal price;
+
+        public Inventory inventory; 
+
+        
+        public Product(int productId, string productName, string description, decimal price)
+        {
+            this.productId = productId;
+            this.productName = productName;
+            this.description = description;
+            this.price = price;
+        }
+
+       
+        public void GetProductDetails()
+        {
+            Console.WriteLine($"Product ID: {productId}, Name: {productName}, Description: {description}, Price: {price}");
+            
+        }
+
+        public void UpdateProductInfo(string newDescription, decimal newPrice)
+        {
+            description = newDescription;
+            if (newPrice >= 0)
+            {
+                price = newPrice;
+            }
+        }
+
+        
+        public bool IsProductInStock()
+        {
+            return inventory.IsProductAvailable(1);
+        }
+
+
+    }
+}
+namespace TechShop
+{
+    public class Order
+    {
+        public int orderId;
+        public Customer customer;
+        public DateTime orderDate;
+        public decimal totalAmount;
+        public OrderDetail orderDetails;
+         public string status; 
+
+        public Order(int orderId, Customer customer ,OrderDetail orderDetails)
+        {
+            this.orderId = orderId;
+            this.customer = customer;
+            this.orderDate = DateTime.Now;
+            this.orderDetails=orderDetails;
+            this.status = "Processing";
+            customer.AddOrder(this);
+        }
+
+        public void DisplayDetails()
+        {
+            Console.WriteLine($"Order ID: {orderId}, Customer: {customer.FirstName}, Order Date: {orderDate}, Total Amount: {totalAmount}, Status: {status}");
+            GetOrderDetails(); 
+        }
+
+       
+        
+
+        public decimal CalculateTotalAmount()
+        {
+            totalAmount = 0;
+            totalAmount += orderDetails.CalculateSubtotal();
+            
+            return totalAmount;
+        }
+
+        public void GetOrderDetails()
+        {
+            Console.WriteLine("Order Details:");
+            
+            Console.WriteLine($"- Product: {orderDetails.product.productName}, Quantity: {orderDetails.quantity}, Subtotal: {orderDetails.CalculateSubtotal()}");
+            
+        }
+
+        public void UpdateOrderStatus(string newStatus)
+        {
+            status = newStatus;
+            Console.WriteLine($"Order {orderId} status updated to: {status}");
+        }
+
+
+    }
+}
+namespace TechShop
+{
+    public class OrderDetail
+    {
+        public int orderDetailID;
+
+        public Product product;
+        public int quantity;    
+        public decimal discount;
+
+        public OrderDetail(int orderDetailID,  Product product, int quantity)
+        {
+            this.orderDetailID = orderDetailID;
+          
+            this.product = product;
+            this.quantity = quantity;
+            this.discount = 0;
+        }
+
+        public decimal CalculateSubtotal()
+        {
+            return (product.price * quantity) - discount;
+        }
+
+        public void UpdateQuantity(int newQuantity)
+        {
+            if (newQuantity > 0)
+            {
+                quantity = newQuantity;
+            }
+        }
+
+        public void AddDiscount(decimal discountAmount)
+        {
+            if (discountAmount >= 0 && discountAmount <= (product.price * quantity))
+            {
+                discount = discountAmount;
+            }
+        }
+
+        public void DisplayDetails()
+        {
+            Console.WriteLine($"OrderDetail ID: {orderDetailID}, Product: {product.productName}, Quantity: {quantity}, Subtotal: {CalculateSubtotal()}, Discount: {discount}");
+        }
+
+    }
+}
+namespace TechShop
+{
+    public class Inventory
+    {
+        public int inventoryID;
+        public Product product;  
+        public int quantityInStock;
+        public DateTime lastStockUpdate;
+
+     
+        public Inventory(int inventoryID, Product product, int initialStock)
+        {
+            this.inventoryID = inventoryID;
+            this.product = product;
+            this.quantityInStock = initialStock;
+            this.lastStockUpdate = DateTime.Now;
+        }
+
+       
+
+        
+        public int GetQuantityInStock()
+        {
+            return quantityInStock;
+        }
+
+        public void AddToInventory(int quantity)
+        {
+            if (quantity > 0)
+            {
+                quantityInStock += quantity;
+                lastStockUpdate = DateTime.Now;
+                Console.WriteLine($"Added {quantity} units of {product.productName} to inventory. New Stock: {quantityInStock}");
+            }
+        }
+
+        
+        public void RemoveFromInventory(int quantity)
+        {
+            if (quantity > 0 && quantity <= quantityInStock)
+            {
+                quantityInStock -= quantity;
+                lastStockUpdate = DateTime.Now;
+                Console.WriteLine($"{quantity} units of {product.productName} removed from inventory. Remaining Stock: {quantityInStock}");
+            }
+            else
+            {
+                Console.WriteLine($"Insufficient stock for {product.productName}.");
+            }
+        }
+
+       
+        public void UpdateStockQuantity(int newQuantity)
+        {
+            if (newQuantity >= 0)
+            {
+                quantityInStock = newQuantity;
+                lastStockUpdate = DateTime.Now;
+                Console.WriteLine($"Stock updated for {product.productName} to {newQuantity}.");
+            }
+        }
+
+        public bool IsProductAvailable(int quantityToCheck)
+        {
+            return quantityToCheck <= quantityInStock;
+        }
+
+      
+        public decimal GetInventoryValue()
+        {
+            return product.price * quantityInStock;
+        }
+    }
+}
+namespace TechShop
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Product p = new Product(101, "Laptop", "Hp 8gb ramsilver color", 20000);
+
+            Customer customer = new Customer(1, "Harini", "g", "harini@gmail.com", "1234567890", "snvs layout kongu main road");
+            OrderDetail od = new OrderDetail(201, p, 1);
+            od.AddDiscount(0.05m);
+            od.CalculateSubtotal();
+
+            Order o = new Order(10, customer, od);
+
+
+
+            decimal a = o.CalculateTotalAmount();
+            Console.WriteLine(a);
+            o.GetOrderDetails();
+
+            Product p1 = new Product(102, "computer", "Hp 8gb ram,silver color", 20000);
+
+            Customer customer1 = new Customer(1, "Harini", "g", "harini@gmail.com", "1234567890", "snvs layout kongu main road");
+            OrderDetail od1 = new OrderDetail(202, p1, 1);
+            od1.AddDiscount(0.05m);
+            od1.CalculateSubtotal();
+
+            Order o1 = new Order(11, customer1, od1);
+
+
+
+            decimal a1 = o1.CalculateTotalAmount();
+            Console.WriteLine(a1);
+            o1.GetOrderDetails();
+            customer.AddOrder(o1);
+            int count=customer.CalculateTotalOrders();
+            Console.WriteLine(count);
+
+        }
+    }
+}
