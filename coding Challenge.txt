@@ -1,0 +1,857 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetPal
+{
+    public class PetPalException:Exception
+    {
+        public PetPalException(string? message) : base(message)
+        {
+        }
+
+        public PetPalException(string message, Exception ex) : base(message) { }
+
+        
+
+        
+    }
+    public class NullReferencePetException : PetPalException
+    {
+        public NullReferencePetException(string message) : base(message) { }
+
+    }
+
+    public class InvalidPetAgeException : PetPalException
+    {
+        public InvalidPetAgeException(string message) : base(message) { }
+
+
+    }
+
+    public class InsufficientFundsException : PetPalException
+    {
+        public InsufficientFundsException(string message) : base(message) { }
+
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using PetPal.DAO;
+using PetPal.Model;
+
+namespace PetPal
+{
+    internal class PetPalUI
+    {
+        private readonly IPetDAO petDAO;
+        private readonly IDonationDAO donationDAO;
+
+        public PetPalUI(IPetDAO petDao, IDonationDAO donationDao)
+        {
+            petDAO = petDao;
+            donationDAO = donationDao;
+        }
+
+        public void ShowMainMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("🐾 PETPALS ADOPTION PLATFORM 🐾");
+                Console.WriteLine("1. Manage Pets");
+                Console.WriteLine("2. Manage Donations");
+                Console.WriteLine("3. Manage Adoption Events");
+                Console.WriteLine("4. Exit");
+                Console.Write("Select an option: ");
+
+                try
+                {
+                    var choice = Console.ReadLine();
+                    switch (choice)
+                    {
+                        case "1":
+                            ShowPetMenu();
+                            break;
+                        case "2":
+                            ShowDonationMenu();
+                            break;
+                        case "3":
+                            ShowEventMenu();
+                            break;
+                        case "4":
+                            return;
+                        default:
+                            Console.WriteLine("Invalid option. Please try again.");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                }
+                Console.WriteLine("\nPress any key to continue...");
+                Console.ReadKey();
+            }
+        }
+
+        private void ShowPetMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("🐕 PET MANAGEMENT 🐈");
+                Console.WriteLine("1. List All Pets");
+                Console.WriteLine("2. Add New Pet");
+                Console.WriteLine("3. Back to Main Menu");
+                Console.Write("Select an option: ");
+
+                var choice = Console.ReadLine();
+                switch (choice)
+                {
+                    case "1":
+                        ListPets();
+                        break;
+                    case "2":
+                        AddPet();
+                        break;
+                    case "3":
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option. Please try again.");
+                        break;
+                }
+            }
+        }
+
+        private void ListPets()
+        {
+            var pets = petDAO.GetAllPets();
+            Console.WriteLine("\nList of Pets:");
+            foreach (var pet in pets)
+            {
+                Console.WriteLine(pet);
+            }
+        }
+
+        private void AddPet()
+        {
+            try
+            {
+                Console.Write("\nEnter pet type (Dog/Cat): ");
+                var petType = Console.ReadLine();
+
+                Pets pet;
+                if (petType.Equals("Dog", StringComparison.OrdinalIgnoreCase))
+                {
+                    pet = new Dog();
+                    Console.Write("Enter dog breed: ");
+                    ((Dog)pet).DogBreed = Console.ReadLine();
+                }
+                else
+                {
+                    pet = new Cat();
+                    Console.Write("Enter cat color: ");
+                    ((Cat)pet).CatColor = Console.ReadLine();
+                }
+
+                Console.Write("Enter pet name: ");
+                pet.Name = Console.ReadLine();
+            
+
+                Console.Write("Enter pet age: ");
+                pet.Age = int.Parse(Console.ReadLine());
+        
+
+                Console.Write("Enter pet breed: ");
+                pet.Breed = Console.ReadLine();
+                
+
+                if (petDAO.AddPet(pet))
+                    Console.WriteLine("Pet added successfully!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Invalid input format. Please enter valid data.");
+            }
+        }
+
+        private void ShowDonationMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("💰 DONATION MANAGEMENT 💰");
+                Console.WriteLine("1. Record Cash Donation");
+                Console.WriteLine("2. Record Item Donation");
+                Console.WriteLine("3. Back to Main Menu");
+                Console.Write("Select an option: ");
+
+                var choice = Console.ReadLine();
+                switch (choice)
+                {
+                    case "1":
+                        RecordCashDonation();
+                        break;
+                    case "2":
+                        RecordItemDonation();
+                        break;
+                    case "3":
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option. Please try again.");
+                        break;
+                }
+            }
+        }
+
+        private void RecordCashDonation()
+        {
+            try
+            {
+                Console.Write("\nDonor Name: ");
+                var donorName = Console.ReadLine();
+                
+
+                Console.Write("Amount: $");
+                var amount = decimal.Parse(Console.ReadLine());
+           
+
+                var donation = new CashDonation(donorName, amount, DateTime.Now);
+                
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Invalid amount format. Please enter a valid number.");
+            }
+        }
+
+        private void RecordItemDonation()
+        {
+            try
+            {
+                Console.Write("\nDonor Name: ");
+                var donorName = Console.ReadLine();
+               
+
+                Console.Write("Item Type: ");
+                var itemType = Console.ReadLine();
+               
+
+                var donation = new ItemDonation(donorName, itemType);
+               
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+
+        private void ShowEventMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("🎪 ADOPTION EVENT MANAGEMENT 🎪");
+                Console.WriteLine("1. Host New Event");
+                Console.WriteLine("2. View Upcoming Events");
+                Console.WriteLine("3. Back to Main Menu");
+                Console.Write("Select an option: ");
+
+                var choice = Console.ReadLine();
+                switch (choice)
+                {
+                    case "1":
+                        HostAdoptionEvent();
+                        break;
+                    case "2":
+                        // Implement event listing
+                        Console.WriteLine("Feature coming soon!");
+                        break;
+                    case "3":
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option. Please try again.");
+                        break;
+                }
+            }
+        }
+
+        private void HostAdoptionEvent()
+        {
+            try
+            {
+                Console.Write("\nEvent Name: ");
+                var eventName = Console.ReadLine();
+              
+
+                Console.Write("Event Date (MM/DD/YYYY): ");
+                var eventDate = DateTime.Parse(Console.ReadLine());
+
+                var adoptionEvent = new AdoptionEvent
+                {
+                    EventName = eventName,
+                    EventDate = eventDate
+                };
+
+                Console.WriteLine("\nRegistering participants (enter 'done' when finished):");
+                while (true)
+                {
+                    Console.Write("Participant name (or 'done'): ");
+                    var name = Console.ReadLine();
+                    if (name.ToLower() == "done") break;
+
+                   
+
+                    // In a real implementation, you would add to database
+                    Console.WriteLine($"{name} registered for event!");
+                }
+
+                adoptionEvent.HostEvent();
+                Console.WriteLine("Event hosted successfully!");
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Invalid date format. Please use MM/DD/YYYY.");
+            }
+        }
+    }
+}
+using PetPal.DAO;
+
+namespace PetPal
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            IPetDAO petdao = new PetDAOImple();
+            IDonationDAO donationdao = new DonationDAOImple();
+
+            // Create and run UI
+            var ui = new PetPalUI(petdao, donationdao);
+            ui.ShowMainMenu();
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetPal.DAO
+{
+    internal class DBUtility
+    {
+        const string connectionString = @"Data Source=HARINI;Initial Catalog=pet;Integrated Security=True;MultipleActiveResultSets=true;";
+
+        // Method to open connection
+        public static SqlConnection GetConnection()
+        {
+            SqlConnection connectionObject = new SqlConnection(connectionString);
+            try
+            {
+                connectionObject.Open();
+                return connectionObject;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error Opening the Connection: {e.Message}");
+                return null;
+            }
+        }
+
+        // Method to close the connection
+        public static void CloseDbConnection(SqlConnection connectionObject)
+        {
+            if (connectionObject != null)
+            {
+                try
+                {
+                    if (connectionObject.State != ConnectionState.Closed)
+                    {
+                        connectionObject.Close();
+                        connectionObject.Dispose();
+                        Console.WriteLine("Connection closed");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error closing connection: {e.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Connection is already null");
+            }
+        }
+
+
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using PetPal.Model;
+
+namespace PetPal.DAO
+{
+    public class DonationDAOImple:IDonationDAO
+    {
+        public bool RecordCashDonation(CashDonation donation)
+        {
+            try
+            {
+                using (SqlConnection connection = DBUtility.GetConnection())
+                {
+
+                    string query = "INSERT INTO Donations (DonorName, Amount, DonationDate, ItemType) " +
+                                  "VALUES (@DonorName, @Amount, @DonationDate, NULL)";
+
+                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@DonorName", donation.DonorName);
+                        cmd.Parameters.AddWithValue("@Amount", donation.Amount);
+                        cmd.Parameters.AddWithValue("@DonationDate", donation.DonationDate);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw;
+            }
+          
+            catch (Exception ex)
+            {
+                throw new PetPalException("An unexpected error occurred while recording the cash donation.", ex);
+            }
+        }
+
+        public bool RecordItemDonation(ItemDonation donation)
+        {
+            try
+            {
+                using (SqlConnection connection = DBUtility.GetConnection())
+                {
+                    if (connection == null)
+                    {
+                        throw new PetPalException("Failed to connect to the database.");
+                    }
+
+                    string query = "INSERT INTO Donations (DonorName, Amount, DonationDate, ItemType) " +
+                                  "VALUES (@DonorName, 0, NULL, @ItemType)";
+
+                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@DonorName", donation.DonorName);
+                        cmd.Parameters.AddWithValue("@ItemType", donation.ItemType);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw;
+            }
+          
+            catch (Exception ex)
+            {
+                throw new PetPalException("An unexpected error occurred while recording the item donation.", ex);
+            }
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using PetPal.Model;
+
+namespace PetPal.DAO
+{
+    internal interface IDonationDAO
+    {
+      bool RecordCashDonation(CashDonation donation);
+        bool RecordItemDonation(ItemDonation donation);
+
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using PetPal.Model;
+
+namespace PetPal.DAO
+{
+   internal interface IPetDAO
+    {
+        List<Pets> GetAllPets();
+        bool AddPet(Pets pet);
+        bool RemovePet(int petId);
+
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using PetPal.Model;
+
+
+namespace PetPal.DAO
+{
+    public class PetDAOImple:IPetDAO
+    {
+        public List<Pets> GetAllPets()
+        {
+            List<Pets> pets = new List<Pets>();
+
+            try
+            {
+                using (SqlConnection connection = DBUtility.GetConnection())
+                {
+                   
+
+                    using (SqlCommand cmd = new SqlCommand("SELECT * FROM Pets", connection))
+                    {
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                
+                                string? name = reader["Name"] as string; 
+                                int age = Convert.ToInt32(reader["Age"]); 
+                                string? breed = reader["Breed"] as string;
+                                string petType = reader["PetType"].ToString();
+                                string? dogBreed = reader["DogBreed"] as string;
+                                string? catColor = reader["CatColor"] as string;
+
+                                // Validate data
+                                if (string.IsNullOrEmpty(name))
+                                {
+                                    throw new NullReferencePetException("Pet name cannot be null or empty.");
+                                }
+
+                                if (age < 0)
+                                {
+                                    throw new InvalidPetAgeException("Pet age must be a non-negative number.");
+                                }
+
+                                if (petType == "Dog")
+                                {
+                                    if (string.IsNullOrEmpty(breed) || string.IsNullOrEmpty(dogBreed))
+                                    {
+                                        throw new NullReferencePetException("Dog breed and breed cannot be null or empty.");
+                                    }
+
+                                    pets.Add(new Dog(name, age, breed, dogBreed));
+                                }
+                                else if (petType == "Cat")
+                                {
+                                    if (string.IsNullOrEmpty(breed) || string.IsNullOrEmpty(catColor))
+                                    {
+                                        throw new NullReferencePetException("Cat color and breed cannot be null or empty.");
+                                    }
+                                    pets.Add(new Cat(name, age, breed, catColor));
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Unknown pet type: {petType} for pet ID: {reader["PetId"]}");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw;
+            }
+          
+            catch (Exception ex)
+            {
+                throw new PetPalException("An unexpected error occurred while retrieving pets.", ex);
+            }
+
+            return pets;
+        }
+
+        public bool AddPet(Pets pet)
+        {
+            try
+            {
+                using (SqlConnection connection = DBUtility.GetConnection())
+                {
+                   
+
+                    string query = "INSERT INTO Pets (Name, Age, Breed, PetType, DogBreed, CatColor) " +
+                                  "VALUES (@Name, @Age, @Breed, @PetType, @DogBreed, @CatColor)";
+
+                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@Name", pet.Name);
+                        cmd.Parameters.AddWithValue("@Age", pet.Age);
+                        cmd.Parameters.AddWithValue("@Breed", pet.Breed);
+
+                        if (pet is Dog dog)
+                        {
+                            cmd.Parameters.AddWithValue("@PetType", "Dog");
+                            cmd.Parameters.AddWithValue("@DogBreed", dog.DogBreed);
+                            cmd.Parameters.AddWithValue("@CatColor", DBNull.Value);
+                        }
+                        else if (pet is Cat cat)
+                        {
+                            cmd.Parameters.AddWithValue("@PetType", "Cat");
+                            cmd.Parameters.AddWithValue("@DogBreed", DBNull.Value);
+                            cmd.Parameters.AddWithValue("@CatColor", cat.CatColor);
+                        }
+                        
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new PetPalException("Error adding pet to the database.", ex);
+            }
+           
+            catch (Exception ex)
+            {
+                throw new PetPalException("An unexpected error occurred while adding the pet.", ex);
+            }
+        }
+
+        public bool RemovePet(int petId)
+        {
+            try
+            {
+                using (SqlConnection connection = DBUtility.GetConnection())
+                {
+                   
+
+                    string query = "DELETE FROM Pets WHERE PetId = @PetId";
+
+                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@PetId", petId);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw ;
+            }
+            
+            catch (Exception ex)
+            {
+                throw new PetPalException("An unexpected error occurred while removing the pet.", ex);
+            }
+
+
+        }
+      }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetPal.Model
+{
+    internal class Cat:Pets
+    {
+        private string _catColor;
+
+        public Cat(string name, int age, string breed, string catColor) : base(name, age, breed)
+        {
+            CatColor = catColor;
+        }
+
+        public string CatColor
+        {
+            get { return _catColor; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new PetPalException("Cat color cannot be null or empty.");
+                }
+                _catColor = value;
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + $", Cat Color: {CatColor}";
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetPal.Model
+{
+    internal class Dog:Pets
+    {
+        private string _dogBreed;
+
+        public string DogBreed
+        {
+            get { return _dogBreed; }
+            set { _dogBreed = value; }
+        }
+
+        public Dog(string name, int age, string breed, string dogBreed) : base(name, age, breed)
+        {
+            
+            if (string.IsNullOrEmpty(dogBreed))
+            {
+                throw new ArgumentException("DogBreed cannot be null or empty.", nameof(dogBreed));
+            }
+
+            _dogBreed = dogBreed;
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetPal.Model
+{
+    internal abstract class Donation
+    {
+        private string _donorName;
+        private decimal _amount;
+
+        public Donation(string donorName, decimal amount)
+        {
+            DonorName = donorName;
+            Amount = amount;
+        }
+
+        public string DonorName
+        {
+            get { return _donorName; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new PetPalException("Donor name cannot be null or empty.");
+                }
+                _donorName = value;
+            }
+        }
+
+        public decimal Amount
+        {
+            get { return _amount; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new PetPalException("Donation amount cannot be negative.");
+                }
+                _amount = value;
+            }
+        }
+
+        public abstract void RecordDonation();
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetPal.Model
+{
+    internal class CashDonation:Donation
+    {
+       
+        public DateTime DonationDate { get; set; }
+
+        public CashDonation(string donorName, decimal amount, DateTime donationDate)
+            : base(donorName, amount)
+        {
+            DonationDate = donationDate;
+        }
+
+        public override void RecordDonation()
+        {
+            Console.WriteLine($"Recording cash donation of ${Amount} from {DonorName} on {DonationDate.ToShortDateString()}");
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PetPal.Model
+{
+    internal class ItemDonation:Donation
+    {
+        private string _itemType;
+
+        public ItemDonation(string donorName, string itemType)
+            : base(donorName, 0)
+        {
+            ItemType = itemType;
+        }
+
+        public string ItemType
+        {
+            get { return _itemType; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new PetPalException("Item type cannot be null or empty.");
+                }
+                _itemType = value;
+            }
+        }
+
+        public override void RecordDonation()
+        {
+            Console.WriteLine($"Recording item donation of {ItemType} from {DonorName}");
+        }
+    }
+}
