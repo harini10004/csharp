@@ -4,55 +4,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechShop.Model
+namespace Tech.Model
 {
-    internal class OrderDetail
+    public class OrderDetail
     {
-        private int orderDetailId;
-        private Order order;
-        private Product product;
+        private int orderDetailID;
+        private int orderID;
+        private int productID;
         private int quantity;
-        private decimal discount;
+        private decimal unitPrice;
 
-        public OrderDetail(int orderDetailId, Order order, Product product, int quantity, decimal discount)
+        public int OrderDetailID
         {
-            OrderDetailId = orderDetailId;
-            Order = order;
-            Product = product;
-            Quantity = quantity;
-            Discount = discount;
+            get { return orderDetailID; }
+            set { orderDetailID = value; }
         }
 
-        public int OrderDetailId
+        public int OrderID
         {
-            get { return orderDetailId; }
+            get { return orderID; }
             set
             {
                 if (value <= 0)
-                    throw new TechShopException.InvalidDataException("Order detail ID must be positive.");
-                orderDetailId = value;
+                    throw new ArgumentException("Order ID must be positive");
+                orderID = value;
             }
         }
 
-        public Order Order
+        public int ProductID
         {
-            get { return order; }
+            get { return productID; }
             set
             {
-                if (value == null)
-                    throw new TechShopException.InvalidDataException("Order cannot be null.");
-                order = value;
-            }
-        }
-
-        public Product Product
-        {
-            get { return product; }
-            set
-            {
-                if (value == null)
-                    throw new TechShopException.InvalidDataException("Product cannot be null.");
-                product = value;
+                if (value <= 0)
+                    throw new ArgumentException("Product ID must be positive");
+                productID = value;
             }
         }
 
@@ -62,44 +48,25 @@ namespace TechShop.Model
             set
             {
                 if (value <= 0)
-                    throw new TechShopException.InvalidDataException("Quantity must be positive.");
+                    throw new ArgumentException("Quantity must be positive");
                 quantity = value;
             }
         }
 
-        public decimal Discount
+        public decimal UnitPrice
         {
-            get { return discount; }
+            get { return unitPrice; }
             set
             {
-                if (value < 0 || value > 1)
-                    throw new TechShopException.InvalidDataException("Discount must be between 0 and 1.");
-                discount = value;
+                if (value <= 0)
+                    throw new ArgumentException("Unit price must be positive");
+                unitPrice = value;
             }
-        }
-
-        public decimal CalculateSubtotal()
-        {
-            return Product.Price * Quantity * (1 - Discount);
         }
 
         public override string ToString()
         {
-            return $"Order Detail ID: {OrderDetailId}\t Product: {Product.ProductName}\t Quantity: {Quantity}\t Discount: {Discount:P}\t Subtotal: ₹{CalculateSubtotal():F2}";
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj != null && obj is OrderDetail otherDetail)
-            {
-                return this.OrderDetailId == otherDetail.OrderDetailId;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return OrderDetailId.GetHashCode();
+            return $"OrderDetailID: {OrderDetailID}, OrderID: {OrderID}, ProductID: {ProductID}, Quantity: {Quantity}, UnitPrice: {UnitPrice:C}";
         }
     }
 }

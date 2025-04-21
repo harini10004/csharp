@@ -4,42 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechShop.Model
+namespace Tech.Model
 {
-    internal class Inventory
+    public class Inventory
     {
-         int inventoryId;
-         Product product;
-        int quantityInStock;
-        DateTime lastStockUpdate;
+        private int inventoryID;
+        private int productID;
+        private int quantityInStock;
+        private DateTime lastStockUpdate;
 
-        public Inventory(int inventoryId, Product product, int quantityInStock, DateTime lastStockUpdate)
+        public int InventoryID
         {
-            InventoryId = inventoryId;
-            Product = product;
-            QuantityInStock = quantityInStock;
-            LastStockUpdate = lastStockUpdate;
+            get { return inventoryID; }
+            set { inventoryID = value; }
         }
 
-        public int InventoryId
+        public int ProductID
         {
-            get { return inventoryId; }
+            get { return productID; }
             set
             {
                 if (value <= 0)
-                    throw new TechShopException.InvalidDataException("Inventory ID must be positive.");
-                inventoryId = value;
-            }
-        }
-
-        public Product Product
-        {
-            get { return product; }
-            set
-            {
-                if (value == null)
-                    throw new TechShopException.InvalidDataException("Product cannot be null.");
-                product = value;
+                    throw new ArgumentException("Product ID must be positive");
+                productID = value;
             }
         }
 
@@ -49,7 +36,7 @@ namespace TechShop.Model
             set
             {
                 if (value < 0)
-                    throw new TechShopException.InvalidDataException("Quantity cannot be negative.");
+                    throw new ArgumentException("Quantity cannot be negative");
                 quantityInStock = value;
             }
         }
@@ -57,36 +44,12 @@ namespace TechShop.Model
         public DateTime LastStockUpdate
         {
             get { return lastStockUpdate; }
-            set
-            {
-                if (value > DateTime.Now)
-                    throw new TechShopException.InvalidDataException("Last stock update cannot be in the future.");
-                lastStockUpdate = value;
-            }
-        }
-
-        public decimal GetInventoryValue()
-        {
-            return Product.Price * QuantityInStock;
+            set { lastStockUpdate = value; }
         }
 
         public override string ToString()
         {
-            return $"Inventory ID: {InventoryId}\t Product: {Product.ProductName}\t Quantity: {QuantityInStock}\t Last Updated: {LastStockUpdate:d}\t Value: {GetInventoryValue():C}";
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj != null && obj is Inventory otherInventory)
-            {
-                return this.InventoryId == otherInventory.InventoryId;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return InventoryId.GetHashCode();
+            return $"InventoryID: {InventoryID}, ProductID: {ProductID}, Quantity: {QuantityInStock}, LastUpdate: {LastStockUpdate}";
         }
     }
 }

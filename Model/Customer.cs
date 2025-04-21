@@ -5,20 +5,19 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace TechShop.Model
+namespace Tech.Model
 {
-    internal class Customer
+    public class Customer
     {
-        private int customerId;
+        private int customerID;
         private string firstName;
         private string lastName;
         private string email;
         private string phone;
         private string address;
-
-        public Customer(int customerId, string firstName, string lastName, string email, string phone, string address)
+        public Customer() { }
+        public Customer(string firstName, string lastName, string email, string phone, string address)
         {
-            CustomerId = customerId;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
@@ -26,15 +25,10 @@ namespace TechShop.Model
             Address = address;
         }
 
-        public int CustomerId
+        public int CustomerID
         {
-            get { return customerId; }
-            set
-            {
-                if (value <= 0)
-                    throw new TechShopException.InvalidDataException("Customer ID must be positive.");
-                customerId = value;
-            }
+            get { return customerID; }
+            set { customerID = value; }
         }
 
         public string FirstName
@@ -43,7 +37,7 @@ namespace TechShop.Model
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("First name cannot be empty.");
+                    throw new ArgumentException("First name cannot be empty");
                 firstName = value;
             }
         }
@@ -54,7 +48,7 @@ namespace TechShop.Model
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("Last name cannot be empty.");
+                    throw new ArgumentException("Last name cannot be empty");
                 lastName = value;
             }
         }
@@ -64,13 +58,8 @@ namespace TechShop.Model
             get { return email; }
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("Email cannot be empty.");
-
-                string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
-                if (!Regex.IsMatch(value, pattern))
-                    throw new TechShopException.InvalidDataException("Invalid email format.");
-
+                if (!IsValidEmail(value))
+                    throw new ArgumentException("Invalid email format");
                 email = value;
             }
         }
@@ -80,12 +69,8 @@ namespace TechShop.Model
             get { return phone; }
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("Phone cannot be empty.");
-
-                if (!Regex.IsMatch(value, @"^\d{10}$"))
-                    throw new TechShopException.InvalidDataException("Phone number must be 10 digits.");
-
+                if (!string.IsNullOrEmpty(value) && !IsValidPhone(value))
+                    throw new ArgumentException("Invalid phone number format");
                 phone = value;
             }
         }
@@ -93,27 +78,34 @@ namespace TechShop.Model
         public string Address
         {
             get { return address; }
-            set
+            set { address = value; }
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
             {
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("Address cannot be empty.");
-                address = value;
+                return Regex.IsMatch(email,
+                    @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+                    RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
             }
+            catch (RegexMatchTimeoutException)
+            {
+                return false;
+            }
+        }
+
+        private bool IsValidPhone(string phone)
+        {
+            return Regex.IsMatch(phone, @"^\d{10}$");
         }
 
         public override string ToString()
         {
-            return $"Customer ID: {CustomerId}\t First Name: {FirstName}\t Last Name: {LastName}\t Email: {Email}\t Phone: {Phone}\t Address: {Address}";
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is Customer other && this.CustomerId == other.CustomerId;
-        }
-
-        public override int GetHashCode()
-        {
-            return CustomerId.GetHashCode();
+            return $"CustomerID: {CustomerID}, Name: {FirstName} {LastName}, Email: {Email}, Phone: {Phone}, Address: {Address}";
         }
     }
 }

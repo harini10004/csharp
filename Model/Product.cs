@@ -4,34 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechShop.Model
+namespace Tech.Model
 {
-    internal class Product
+    public class Product
     {
-        private int productId;
+        private int productID;
         private string productName;
-        private string category;
-        private decimal price;
         private string description;
-
-        public Product(int productId, string productName, string category, decimal price, string description)
+        private decimal price;
+       public string Category { get; set; }
+        public Product() { }
+        public Product(string productName, string description, decimal price, string category)
         {
-            ProductId = productId;
             ProductName = productName;
-            Category = category;
-            Price = price;
             Description = description;
+            Price = price;
+            Category = category;
         }
 
-        public int ProductId
+        public int ProductID
         {
-            get { return productId; }
-            set
-            {
-                if (value <= 0)
-                    throw new TechShopException.InvalidDataException("Product ID must be greater than zero.");
-                productId = value;
-            }
+            get { return productID; }
+            set { productID = value; }
         }
 
         public string ProductName
@@ -40,23 +34,15 @@ namespace TechShop.Model
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("Product name cannot be empty.");
-                if (value.Any(char.IsDigit))
-                    throw new TechShopException.InvalidDataException("Product name cannot contain numbers.");
-
+                    throw new ArgumentException("Product name cannot be empty");
                 productName = value;
             }
         }
 
-        public string Category
+        public string Description
         {
-            get { return category; }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("Category cannot be empty.");
-                category = value;
-            }
+            get { return description; }
+            set { description = value; }
         }
 
         public decimal Price
@@ -64,48 +50,15 @@ namespace TechShop.Model
             get { return price; }
             set
             {
-                if (value < 0)
-                    throw new TechShopException.InvalidDataException("Price cannot be negative.");
-
+                if (value <= 0)
+                    throw new ArgumentException("Price must be greater than 0");
                 price = value;
             }
         }
 
-        public string Description
-        {
-            get { return description; }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new TechShopException.InvalidDataException("Description cannot be empty.");
-                description = value;
-            }
-        }
-
-        public void UpdateProductInfo(string category, decimal price, string description)
-        {
-            Category = category;
-            Price = price;
-            Description = description;
-        }
-
         public override string ToString()
         {
-            return $"Product ID: {ProductId}\t Name: {ProductName}\t Category: {Category}\t Price: {Price:F2}\t Description: {Description}";
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (obj != null && obj is Product otherProduct)
-            {
-                return this.ProductId == otherProduct.ProductId;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return ProductId.GetHashCode();
+            return $"ProductID: {ProductID}, Name: {ProductName}, Description: {Description}, Price: {Price:C},Category:{Category}";
         }
     }
 }
